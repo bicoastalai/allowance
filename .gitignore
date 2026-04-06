@@ -36,6 +36,11 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# generated native folders
+# generated native folders (tracked for bare workflow)
 /ios
-/android
+
+# Supabase local temp files
+supabase/.temp/
+
+# Android debug keystore (regenerated automatically)
+android/app/debug.keystore
