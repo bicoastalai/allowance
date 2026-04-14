@@ -1,13 +1,23 @@
 import { Redirect, Tabs } from 'expo-router';
 import { View, ActivityIndicator } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSession } from '@/hooks/useSession';
+import { useProfileContext } from '@/context/ProfileContext';
 
 export default function TabLayout() {
-  const { session, loading } = useSession();
+  const { session, loading: sessionLoading } = useSession();
+  const { profile, loading: profileLoading } = useProfileContext();
 
-  if (loading) {
+  if (sessionLoading || (session && profileLoading)) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#0a0a0a]">
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#0a0a0a',
+        }}
+      >
         <ActivityIndicator color="#22c55e" />
       </View>
     );
@@ -17,23 +27,63 @@ export default function TabLayout() {
     return <Redirect href="/(auth)/login" />;
   }
 
+  if (!profile) {
+    return <Redirect href="/onboarding" />;
+  }
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
           backgroundColor: '#111111',
-          borderTopColor: '#1f1f1f',
+          borderTopColor: '#222222',
+          borderTopWidth: 1,
         },
         tabBarActiveTintColor: '#22c55e',
-        tabBarInactiveTintColor: '#71717a',
-        tabBarLabelStyle: { fontSize: 12 },
+        tabBarInactiveTintColor: '#666666',
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
+        },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Home' }} />
-      <Tabs.Screen name="history" options={{ title: 'History' }} />
-      <Tabs.Screen name="stats" options={{ title: 'Stats' }} />
-      <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: 'History',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'time' : 'time-outline'} size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="stats"
+        options={{
+          title: 'Stats',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'bar-chart' : 'bar-chart-outline'} size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'settings' : 'settings-outline'} size={24} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

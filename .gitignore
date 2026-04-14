@@ -30,8 +30,14 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# Editor
+.vscode/
+
 # local env files
 .env*.local
+
+# generated env module (produced by metro.config.js at startup)
+lib/env.generated.ts
 
 # typescript
 *.tsbuildinfo
@@ -44,3 +50,15 @@ supabase/.temp/
 
 # Android debug keystore (regenerated automatically)
 android/app/debug.keystore
+
+# Keystores — never commit (debug is auto-generated, release is secret)
+*.keystore
+
+# Firebase config — contains project IDs, keep out of public repos
+google-services.json
+
+# Play Store service account key — never commit
+play-store-key.json
+
+# Local keystore credentials — never commit
+android/keystore.properties

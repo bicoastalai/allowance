@@ -26,74 +26,112 @@ export default function LoginScreen() {
     setError('');
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
 
     setLoading(false);
 
-    if (error) {
-      setError(error.message);
+    if (authError) {
+      setError(authError.message);
     }
   }
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-[#0a0a0a]"
+      style={{ flex: 1, backgroundColor: '#0a0a0a' }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View className="flex-1 justify-center px-6">
-        <Text className="text-white text-3xl font-bold mb-2">Welcome back</Text>
-        <Text className="text-zinc-400 text-base mb-10">Sign in to your account</Text>
+      <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24 }}>
+        <Text style={{ color: '#ffffff', fontSize: 30, fontWeight: '700', marginBottom: 8 }}>
+          Welcome back
+        </Text>
+        <Text style={{ color: '#a1a1aa', fontSize: 16, marginBottom: 40 }}>
+          Sign in to your account
+        </Text>
 
-        <View className="gap-4">
-          <View>
-            <Text className="text-zinc-400 text-sm mb-2">Email</Text>
-            <TextInput
-              className="bg-zinc-900 text-white rounded-xl px-4 py-4 text-base border border-zinc-800"
-              placeholder="you@example.com"
-              placeholderTextColor="#52525b"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="email-address"
-              textContentType="emailAddress"
-            />
-          </View>
-
-          <View>
-            <Text className="text-zinc-400 text-sm mb-2">Password</Text>
-            <TextInput
-              className="bg-zinc-900 text-white rounded-xl px-4 py-4 text-base border border-zinc-800"
-              placeholder="••••••••"
-              placeholderTextColor="#52525b"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              textContentType="password"
-            />
-          </View>
-
-          {error ? (
-            <Text className="text-red-400 text-sm">{error}</Text>
-          ) : null}
-
-          <TouchableOpacity
-            className="bg-[#22c55e] rounded-xl py-4 items-center mt-2"
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#0a0a0a" />
-            ) : (
-              <Text className="text-[#0a0a0a] font-semibold text-base">Sign in</Text>
-            )}
-          </TouchableOpacity>
+        <View style={{ marginBottom: 16 }}>
+          <Text style={{ color: '#a1a1aa', fontSize: 14, marginBottom: 8 }}>Email</Text>
+          <TextInput
+            style={{
+              backgroundColor: '#18181b',
+              color: '#ffffff',
+              borderRadius: 12,
+              paddingHorizontal: 16,
+              paddingVertical: 16,
+              fontSize: 16,
+              borderWidth: 1,
+              borderColor: '#27272a',
+            }}
+            placeholder="you@example.com"
+            placeholderTextColor="#52525b"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            textContentType="emailAddress"
+          />
         </View>
 
-        <View className="flex-row justify-center mt-8">
-          <Text className="text-zinc-400 text-sm">Don't have an account? </Text>
-          <Link href="/(auth)/signup">
-            <Text className="text-[#22c55e] text-sm font-medium">Sign up</Text>
+        <View style={{ marginBottom: 8 }}>
+          <Text style={{ color: '#a1a1aa', fontSize: 14, marginBottom: 8 }}>Password</Text>
+          <TextInput
+            style={{
+              backgroundColor: '#18181b',
+              color: '#ffffff',
+              borderRadius: 12,
+              paddingHorizontal: 16,
+              paddingVertical: 16,
+              fontSize: 16,
+              borderWidth: 1,
+              borderColor: '#27272a',
+            }}
+            placeholder="••••••••"
+            placeholderTextColor="#52525b"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            textContentType="password"
+          />
+        </View>
+
+        {error !== '' && (
+          <Text style={{ color: '#f87171', fontSize: 14, marginTop: 8, marginBottom: 4 }}>
+            {error}
+          </Text>
+        )}
+
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#22c55e',
+            borderRadius: 12,
+            paddingVertical: 16,
+            alignItems: 'center',
+            marginTop: 24,
+            opacity: loading ? 0.7 : 1,
+          }}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#0a0a0a" />
+          ) : (
+            <Text style={{ color: '#0a0a0a', fontWeight: '600', fontSize: 16 }}>
+              Sign in
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 32 }}>
+          <Text style={{ color: '#a1a1aa', fontSize: 14 }}>Don't have an account? </Text>
+          <Link href="/(auth)/signup" asChild>
+            <TouchableOpacity>
+              <Text style={{ color: '#22c55e', fontSize: 14, fontWeight: '500' }}>
+                Sign up
+              </Text>
+            </TouchableOpacity>
           </Link>
         </View>
       </View>

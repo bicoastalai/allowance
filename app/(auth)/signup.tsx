@@ -39,12 +39,15 @@ export default function SignupScreen() {
     setError('');
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error: authError } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+    });
 
     setLoading(false);
 
-    if (error) {
-      setError(error.message);
+    if (authError) {
+      setError(authError.message);
     } else {
       setSuccess(true);
     }
@@ -52,14 +55,27 @@ export default function SignupScreen() {
 
   if (success) {
     return (
-      <View className="flex-1 bg-[#0a0a0a] justify-center px-6">
-        <Text className="text-white text-3xl font-bold mb-3">Check your email</Text>
-        <Text className="text-zinc-400 text-base leading-6 mb-8">
-          We sent a confirmation link to{' '}
-          <Text className="text-white">{email}</Text>. Open it to activate your account.
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: '#0a0a0a',
+          justifyContent: 'center',
+          paddingHorizontal: 24,
+        }}
+      >
+        <Text style={{ color: '#ffffff', fontSize: 30, fontWeight: '700', marginBottom: 12 }}>
+          Check your email
         </Text>
-        <Link href="/(auth)/login">
-          <Text className="text-[#22c55e] text-base font-medium">Back to sign in</Text>
+        <Text style={{ color: '#a1a1aa', fontSize: 16, lineHeight: 26, marginBottom: 32 }}>
+          We sent a confirmation link to{' '}
+          <Text style={{ color: '#ffffff' }}>{email}</Text>. Open it to activate your account.
+        </Text>
+        <Link href="/(auth)/login" asChild>
+          <TouchableOpacity>
+            <Text style={{ color: '#22c55e', fontSize: 16, fontWeight: '500' }}>
+              Back to sign in
+            </Text>
+          </TouchableOpacity>
         </Link>
       </View>
     );
@@ -67,80 +83,133 @@ export default function SignupScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-[#0a0a0a]"
+      style={{ flex: 1, backgroundColor: '#0a0a0a' }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <View className="flex-1 justify-center px-6 py-12">
-          <Text className="text-white text-3xl font-bold mb-2">Create account</Text>
-          <Text className="text-zinc-400 text-base mb-10">Start managing your money</Text>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            paddingHorizontal: 24,
+            paddingVertical: 48,
+          }}
+        >
+          <Text style={{ color: '#ffffff', fontSize: 30, fontWeight: '700', marginBottom: 8 }}>
+            Create account
+          </Text>
+          <Text style={{ color: '#a1a1aa', fontSize: 16, marginBottom: 40 }}>
+            Start managing your money
+          </Text>
 
-          <View className="gap-4">
-            <View>
-              <Text className="text-zinc-400 text-sm mb-2">Email</Text>
-              <TextInput
-                className="bg-zinc-900 text-white rounded-xl px-4 py-4 text-base border border-zinc-800"
-                placeholder="you@example.com"
-                placeholderTextColor="#52525b"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="email-address"
-                textContentType="emailAddress"
-              />
-            </View>
-
-            <View>
-              <Text className="text-zinc-400 text-sm mb-2">Password</Text>
-              <TextInput
-                className="bg-zinc-900 text-white rounded-xl px-4 py-4 text-base border border-zinc-800"
-                placeholder="••••••••"
-                placeholderTextColor="#52525b"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                textContentType="newPassword"
-              />
-            </View>
-
-            <View>
-              <Text className="text-zinc-400 text-sm mb-2">Confirm password</Text>
-              <TextInput
-                className="bg-zinc-900 text-white rounded-xl px-4 py-4 text-base border border-zinc-800"
-                placeholder="••••••••"
-                placeholderTextColor="#52525b"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-                textContentType="newPassword"
-              />
-            </View>
-
-            {error ? (
-              <Text className="text-red-400 text-sm">{error}</Text>
-            ) : null}
-
-            <TouchableOpacity
-              className="bg-[#22c55e] rounded-xl py-4 items-center mt-2"
-              onPress={handleSignup}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#0a0a0a" />
-              ) : (
-                <Text className="text-[#0a0a0a] font-semibold text-base">Create account</Text>
-              )}
-            </TouchableOpacity>
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ color: '#a1a1aa', fontSize: 14, marginBottom: 8 }}>Email</Text>
+            <TextInput
+              style={{
+                backgroundColor: '#18181b',
+                color: '#ffffff',
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                paddingVertical: 16,
+                fontSize: 16,
+                borderWidth: 1,
+                borderColor: '#27272a',
+              }}
+              placeholder="you@example.com"
+              placeholderTextColor="#52525b"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              textContentType="emailAddress"
+            />
           </View>
 
-          <View className="flex-row justify-center mt-8">
-            <Text className="text-zinc-400 text-sm">Already have an account? </Text>
-            <Link href="/(auth)/login">
-              <Text className="text-[#22c55e] text-sm font-medium">Sign in</Text>
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ color: '#a1a1aa', fontSize: 14, marginBottom: 8 }}>Password</Text>
+            <TextInput
+              style={{
+                backgroundColor: '#18181b',
+                color: '#ffffff',
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                paddingVertical: 16,
+                fontSize: 16,
+                borderWidth: 1,
+                borderColor: '#27272a',
+              }}
+              placeholder="••••••••"
+              placeholderTextColor="#52525b"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              textContentType="newPassword"
+            />
+          </View>
+
+          <View style={{ marginBottom: 8 }}>
+            <Text style={{ color: '#a1a1aa', fontSize: 14, marginBottom: 8 }}>
+              Confirm password
+            </Text>
+            <TextInput
+              style={{
+                backgroundColor: '#18181b',
+                color: '#ffffff',
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                paddingVertical: 16,
+                fontSize: 16,
+                borderWidth: 1,
+                borderColor: '#27272a',
+              }}
+              placeholder="••••••••"
+              placeholderTextColor="#52525b"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+              textContentType="newPassword"
+            />
+          </View>
+
+          {error !== '' && (
+            <Text style={{ color: '#f87171', fontSize: 14, marginTop: 8, marginBottom: 4 }}>
+              {error}
+            </Text>
+          )}
+
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#22c55e',
+              borderRadius: 12,
+              paddingVertical: 16,
+              alignItems: 'center',
+              marginTop: 24,
+              opacity: loading ? 0.7 : 1,
+            }}
+            onPress={handleSignup}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#0a0a0a" />
+            ) : (
+              <Text style={{ color: '#0a0a0a', fontWeight: '600', fontSize: 16 }}>
+                Create account
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 32 }}>
+            <Text style={{ color: '#a1a1aa', fontSize: 14 }}>Already have an account? </Text>
+            <Link href="/(auth)/login" asChild>
+              <TouchableOpacity>
+                <Text style={{ color: '#22c55e', fontSize: 14, fontWeight: '500' }}>
+                  Sign in
+                </Text>
+              </TouchableOpacity>
             </Link>
           </View>
         </View>
