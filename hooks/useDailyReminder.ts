@@ -23,7 +23,7 @@ export function useDailyReminder() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Notifications.getScheduledNotificationsAsync().then((scheduled) => {
+    Notifications.getAllScheduledNotificationsAsync().then((scheduled) => {
       setEnabled(scheduled.some((n) => n.identifier === NOTIFICATION_ID));
       setLoading(false);
     });

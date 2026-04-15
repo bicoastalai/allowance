@@ -20,8 +20,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.allowance.app",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.bicoastal.allowance",
+      "googleServicesFile": "./android/app/google-services.json"
     },
     "plugins": [
       "expo-router",
@@ -33,6 +33,12 @@
         }
       ],
       "expo-notifications"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1a4f97f2-226e-4a7e-9d03-e6a0ac259405"
+      }
+    }
   }
 }

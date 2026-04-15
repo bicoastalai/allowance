@@ -2,10 +2,13 @@ import '../global.css';
 import { useEffect, Component, ReactNode } from 'react';
 import { Stack } from 'expo-router';
 import { View, ActivityIndicator, Text } from 'react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Purchases from 'react-native-purchases';
 import { useSession } from '@/hooks/useSession';
 import { ProfileProvider } from '@/context/ProfileContext';
 import { configureRevenueCat } from '@/lib/revenuecat';
+
+const queryClient = new QueryClient();
 
 class RootErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
   state = { error: null };
@@ -50,16 +53,18 @@ export default function RootLayout() {
   }
 
   return (
-    <RootErrorBoundary>
-    <ProfileProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="onboarding" />
-        <Stack.Screen name="goals" />
-        <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ProfileProvider>
-    </RootErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <RootErrorBoundary>
+        <ProfileProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="onboarding" />
+            <Stack.Screen name="goals" />
+            <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
+          </Stack>
+        </ProfileProvider>
+      </RootErrorBoundary>
+    </QueryClientProvider>
   );
 }

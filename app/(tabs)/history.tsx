@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -7,32 +7,27 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  SafeAreaView,
   Modal,
   TextInput,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { supabase } from '@/lib/supabase';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { DEFAULT_CATEGORIES, type Category } from '@/constants/categories';
-
-type Transaction = {
-  id: string;
-  amount: number;
-  category: string;
-  note: string | null;
-  transaction_date: string;
-};
-
-type GroupedTransactions = {
-  date: string;
-  items: Transaction[];
-};
+import {
+  useTransactions,
+  useUpdateTransaction,
+  useDeleteTransaction,
+} from '@/features/transactions';
+import type { Transaction } from '@/features/transactions';
 
 function formatDate(dateStr: string) {
   const [year, month, day] = dateStr.split('-').map(Number);
-  const d = new Date(year, month - 1, day);
-  return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
 }
 
 function fmt(n: number) {
@@ -51,12 +46,25 @@ const INPUT_STYLE = {
   marginBottom: 20,
 };
 
-export default function HistoryScreen() {
-  const [groups, setGroups] = useState<GroupedTransactions[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+type GroupedTransactions = { date: string; items: Transaction[] };
 
-  // Edit modal
+function groupByDate(transactions: Transaction[]): GroupedTransactions[] {
+  const map = new Map<string, Transaction[]>();
+  for (const t of transactions) {
+    const existing = map.get(t.transaction_date) ?? [];
+    existing.push(t);
+    map.set(t.transaction_date, existing);
+  }
+  return Array.from(map.entries()).map(([date, items]) => ({ date, items }));
+}
+
+export default function HistoryScreen() {
+  // Fetch all transactions (no date filter = full history)
+  const { data: transactions = [], isLoading, refetch } = useTransactions({ fromDate: '2000-01-01' });
+  const { mutateAsync: updateTransaction } = useUpdateTransaction();
+  const { mutate: deleteTransaction } = useDeleteTransaction();
+
+  const [refreshing, setRefreshing] = useState(false);
   const [editTarget, setEditTarget] = useState<Transaction | null>(null);
   const [editAmount, setEditAmount] = useState('');
   const [editCategory, setEditCategory] = useState<Category>('Other');
@@ -64,42 +72,9 @@ export default function HistoryScreen() {
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState('');
 
-  const fetchTransactions = useCallback(async () => {
-    setLoading(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
-
-    const { data } = await supabase
-      .from('transactions')
-      .select('id, amount, category, note, transaction_date')
-      .eq('user_id', user.id)
-      .order('transaction_date', { ascending: false })
-      .order('created_at', { ascending: false });
-
-    const transactions: Transaction[] = data ?? [];
-
-    const map = new Map<string, Transaction[]>();
-    for (const t of transactions) {
-      const existing = map.get(t.transaction_date) ?? [];
-      existing.push(t);
-      map.set(t.transaction_date, existing);
-    }
-
-    setGroups(
-      Array.from(map.entries()).map(([date, items]) => ({ date, items })),
-    );
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    fetchTransactions();
-  }, [fetchTransactions]);
-
   async function handleRefresh() {
     setRefreshing(true);
-    await fetchTransactions();
+    await refetch();
     setRefreshing(false);
   }
 
@@ -109,10 +84,7 @@ export default function HistoryScreen() {
       {
         text: 'Delete',
         style: 'destructive',
-        onPress: async () => {
-          await supabase.from('transactions').delete().eq('id', id);
-          fetchTransactions();
-        },
+        onPress: () => deleteTransaction(id),
       },
     ]);
   }
@@ -120,7 +92,7 @@ export default function HistoryScreen() {
   function openEdit(t: Transaction) {
     setEditTarget(t);
     setEditAmount(String(t.amount));
-    setEditCategory(t.category as Category);
+    setEditCategory(t.category);
     setEditNote(t.note ?? '');
     setEditError('');
   }
@@ -133,29 +105,25 @@ export default function HistoryScreen() {
     }
     setEditError('');
     setEditSaving(true);
-
-    const { error } = await supabase
-      .from('transactions')
-      .update({
-        amount: amt,
-        category: editCategory,
-        note: editNote.trim() || null,
-      })
-      .eq('id', editTarget!.id);
-
-    setEditSaving(false);
-    if (error) { setEditError(error.message); return; }
-    setEditTarget(null);
-    fetchTransactions();
+    try {
+      await updateTransaction({ id: editTarget!.id, amount: amt, category: editCategory, note: editNote.trim() || null });
+      setEditTarget(null);
+    } catch (e: unknown) {
+      setEditError(e instanceof Error ? e.message : 'Failed to save.');
+    } finally {
+      setEditSaving(false);
+    }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={{ flex: 1, backgroundColor: '#0a0a0a', alignItems: 'center', justifyContent: 'center' }}>
         <ActivityIndicator color="#22c55e" />
       </View>
     );
   }
+
+  const groups = groupByDate(transactions);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#0a0a0a' }}>
@@ -214,8 +182,7 @@ export default function HistoryScreen() {
         )}
       </ScrollView>
 
-      {/* Edit Modal */}
-      <Modal visible={!!editTarget} animationType="slide" transparent>
+      <Modal visible={!!editTarget} animationType="slide" transparent onRequestClose={() => setEditTarget(null)}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <TouchableOpacity
             style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' }}

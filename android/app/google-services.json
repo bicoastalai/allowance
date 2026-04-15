@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1057926762175",
+    "project_id": "allowance-f0fc1",
+    "storage_bucket": "allowance-f0fc1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1057926762175:android:108c2b871cf68f7311400a",
+        "android_client_info": {
+          "package_name": "com.bicoastal.allowance"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmxZXjB00C66pDYtVeWhLzH2-f-OK4Bys"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

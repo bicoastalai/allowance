@@ -54,8 +54,9 @@ android/app/debug.keystore
 # Keystores — never commit (debug is auto-generated, release is secret)
 *.keystore
 
-# Firebase config — contains project IDs, keep out of public repos
-google-services.json
+# Firebase config at root (downloaded copy) — keep out of repo
+/google-services.json
+# android/app/google-services.json IS committed — safe to include (restricted by package + SHA)
 
 # Play Store service account key — never commit
 play-store-key.json

@@ -1,10 +1,10 @@
-package com.allowance.app
+package com.bicoastal.allowance
 
 import android.os.Build
 import android.os.Bundle
 
-import com.allowance.app.BuildConfig
-import com.allowance.app.R
+import com.bicoastal.allowance.BuildConfig
+import com.bicoastal.allowance.R
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled

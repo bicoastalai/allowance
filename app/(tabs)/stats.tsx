@@ -1,19 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  RefreshControl,
-  ActivityIndicator,
-  SafeAreaView,
-  TouchableOpacity,
-} from 'react-native';
-import { supabase } from '@/lib/supabase';
+import { useState } from 'react';
+import { View, Text, ScrollView, RefreshControl, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTransactions } from '@/features/transactions';
 
-type CategoryTotal = {
-  category: string;
-  total: number;
-};
+type CategoryTotal = { category: string; total: number };
 
 function fmt(n: number) {
   return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -31,56 +21,26 @@ function clamp(year: number, month: number): { year: number; month: number } {
   return { year, month };
 }
 
+function padMonth(m: number) {
+  return String(m + 1).padStart(2, '0');
+}
+
 export default function StatsScreen() {
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
 
-  const [totalSpent, setTotalSpent] = useState(0);
-  const [categoryTotals, setCategoryTotals] = useState<CategoryTotal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const fromDate = `${selectedYear}-${padMonth(selectedMonth)}-01`;
+  const lastDay = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+  const toDate = `${selectedYear}-${padMonth(selectedMonth)}-${lastDay}`;
+
+  const { data: transactions = [], isLoading, refetch } = useTransactions({ fromDate, toDate });
+
   const [refreshing, setRefreshing] = useState(false);
-
-  const fetchStats = useCallback(async (year: number, month: number) => {
-    setLoading(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
-
-    const firstDay = `${year}-${String(month + 1).padStart(2, '0')}-01`;
-    const lastDay = `${year}-${String(month + 1).padStart(2, '0')}-${new Date(year, month + 1, 0).getDate()}`;
-
-    const { data } = await supabase
-      .from('transactions')
-      .select('amount, category')
-      .eq('user_id', user.id)
-      .gte('transaction_date', firstDay)
-      .lte('transaction_date', lastDay);
-
-    const transactions = data ?? [];
-    const total = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
-
-    const map = new Map<string, number>();
-    for (const t of transactions) {
-      map.set(t.category, (map.get(t.category) ?? 0) + Number(t.amount));
-    }
-    const sorted = Array.from(map.entries())
-      .map(([category, total]) => ({ category, total }))
-      .sort((a, b) => b.total - a.total);
-
-    setTotalSpent(total);
-    setCategoryTotals(sorted);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    fetchStats(selectedYear, selectedMonth);
-  }, [fetchStats, selectedYear, selectedMonth]);
 
   async function handleRefresh() {
     setRefreshing(true);
-    await fetchStats(selectedYear, selectedMonth);
+    await refetch();
     setRefreshing(false);
   }
 
@@ -102,8 +62,16 @@ export default function StatsScreen() {
     setSelectedMonth(c.month);
   }
 
-  const isCurrentMonth =
-    selectedYear === now.getFullYear() && selectedMonth === now.getMonth();
+  const isCurrentMonth = selectedYear === now.getFullYear() && selectedMonth === now.getMonth();
+  const totalSpent = transactions.reduce((sum, t) => sum + t.amount, 0);
+
+  const categoryMap = new Map<string, number>();
+  for (const t of transactions) {
+    categoryMap.set(t.category, (categoryMap.get(t.category) ?? 0) + t.amount);
+  }
+  const categoryTotals: CategoryTotal[] = Array.from(categoryMap.entries())
+    .map(([category, total]) => ({ category, total }))
+    .sort((a, b) => b.total - a.total);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#0a0a0a' }}>
@@ -115,7 +83,6 @@ export default function StatsScreen() {
           Stats
         </Text>
 
-        {/* Month selector */}
         <View
           style={{
             flexDirection: 'row',
@@ -133,11 +100,9 @@ export default function StatsScreen() {
           <TouchableOpacity onPress={goBack} hitSlop={12} style={{ padding: 8 }}>
             <Text style={{ color: '#22c55e', fontSize: 20 }}>‹</Text>
           </TouchableOpacity>
-
           <Text style={{ color: '#ffffff', fontSize: 15, fontWeight: '600' }}>
             {monthLabel(selectedYear, selectedMonth)}
           </Text>
-
           <TouchableOpacity
             onPress={goForward}
             hitSlop={12}
@@ -148,7 +113,7 @@ export default function StatsScreen() {
           </TouchableOpacity>
         </View>
 
-        {loading ? (
+        {isLoading ? (
           <View style={{ alignItems: 'center', marginTop: 60 }}>
             <ActivityIndicator color="#22c55e" />
           </View>

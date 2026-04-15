@@ -1,3 +1,4 @@
+/** @deprecated Use useDailyBudget from @/features/transactions instead. TODO: remove after all refs migrated. */
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/context/ProfileContext';

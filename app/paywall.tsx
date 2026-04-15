@@ -5,9 +5,9 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  SafeAreaView,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import { usePremium } from '@/hooks/usePremium';
@@ -78,10 +78,21 @@ export default function PaywallScreen() {
       {/* Close button */}
       <TouchableOpacity
         onPress={() => router.back()}
-        hitSlop={12}
-        style={{ position: 'absolute', top: 56, right: 24, zIndex: 10 }}
+        hitSlop={16}
+        style={{
+          position: 'absolute',
+          top: 16,
+          right: 20,
+          zIndex: 10,
+          width: 36,
+          height: 36,
+          borderRadius: 18,
+          backgroundColor: '#1e1e1e',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
       >
-        <Text style={{ color: '#52525b', fontSize: 28, lineHeight: 28 }}>×</Text>
+        <Text style={{ color: '#ffffff', fontSize: 20, lineHeight: 22 }}>×</Text>
       </TouchableOpacity>
 
       <ScrollView
