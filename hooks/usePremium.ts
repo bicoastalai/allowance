@@ -25,6 +25,9 @@ export function usePremium() {
   }
 
   useEffect(() => {
+    const configured = !!(process.env.EXPO_PUBLIC_REVENUECAT_GOOGLE_API_KEY ?? '');
+    if (!configured) { setLoading(false); return; }
+
     Purchases.getCustomerInfo()
       .then(checkInfo)
       .catch(() => {})

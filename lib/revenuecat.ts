@@ -17,6 +17,11 @@ export const ENTITLEMENT_ID = 'premium';
  */
 export function configureRevenueCat(userId?: string) {
   const apiKey = process.env.EXPO_PUBLIC_REVENUECAT_GOOGLE_API_KEY ?? '';
+  if (!apiKey) {
+    // Skip configuration in development when no key is set.
+    // The app will work normally; premium features will show as locked.
+    return;
+  }
   Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.DEBUG : LOG_LEVEL.ERROR);
   Purchases.configure({ apiKey, appUserID: userId ?? null });
 }
