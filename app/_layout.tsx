@@ -1,11 +1,27 @@
 import '../global.css';
-import { useEffect } from 'react';
+import { useEffect, Component, ReactNode } from 'react';
 import { Stack } from 'expo-router';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Text } from 'react-native';
 import Purchases from 'react-native-purchases';
 import { useSession } from '@/hooks/useSession';
 import { ProfileProvider } from '@/context/ProfileContext';
 import { configureRevenueCat } from '@/lib/revenuecat';
+
+class RootErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
+  state = { error: null };
+  static getDerivedStateFromError(e: Error) { return { error: e.message }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <View style={{ flex: 1, backgroundColor: '#0a0a0a', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <Text style={{ color: '#f87171', fontSize: 16, textAlign: 'center', marginBottom: 8 }}>Something went wrong</Text>
+          <Text style={{ color: '#52525b', fontSize: 13, textAlign: 'center' }}>{this.state.error}</Text>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export default function RootLayout() {
   const { session, loading } = useSession();
@@ -16,6 +32,8 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
+    const rcConfigured = !!(process.env.EXPO_PUBLIC_REVENUECAT_GOOGLE_API_KEY ?? '');
+    if (!rcConfigured) return;
     if (session?.user.id) {
       Purchases.logIn(session.user.id).catch(() => {});
     } else {
@@ -32,6 +50,7 @@ export default function RootLayout() {
   }
 
   return (
+    <RootErrorBoundary>
     <ProfileProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
@@ -41,5 +60,6 @@ export default function RootLayout() {
         <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
       </Stack>
     </ProfileProvider>
+    </RootErrorBoundary>
   );
 }
