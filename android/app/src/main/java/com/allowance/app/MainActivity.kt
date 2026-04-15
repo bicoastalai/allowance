@@ -3,8 +3,8 @@ package com.allowance.app
 import android.os.Build
 import android.os.Bundle
 
-import com.allowance.BuildConfig
-import com.allowance.R
+import com.allowance.app.BuildConfig
+import com.allowance.app.R
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled

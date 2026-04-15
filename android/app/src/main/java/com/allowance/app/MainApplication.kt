@@ -3,7 +3,7 @@ package com.allowance.app
 import android.app.Application
 import android.content.res.Configuration
 
-import com.allowance.BuildConfig
+import com.allowance.app.BuildConfig
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
