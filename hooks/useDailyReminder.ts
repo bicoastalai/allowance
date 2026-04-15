@@ -50,7 +50,7 @@ export function useDailyReminder() {
     await Notifications.scheduleNotificationAsync({
       identifier: NOTIFICATION_ID,
       content: {
-        title: 'How's your budget today? 💚',
+        title: "How's your budget today? 💚",
         body: 'Check your daily allowance and log any expenses.',
       },
       trigger: {
