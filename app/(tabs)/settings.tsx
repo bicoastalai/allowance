@@ -190,9 +190,40 @@ export default function SettingsScreen() {
     }
   }
 
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
   async function handleSignOut() {
     await supabase.auth.signOut();
     router.replace('/(auth)/login');
+  }
+
+  function handleDeleteAccount() {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your account and all your data. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: confirmDeleteAccount,
+        },
+      ],
+    );
+  }
+
+  async function confirmDeleteAccount() {
+    setDeletingAccount(true);
+    try {
+      const { error } = await supabase.functions.invoke('delete-account');
+      if (error) throw error;
+      await supabase.auth.signOut();
+      router.replace('/(auth)/login');
+    } catch (e: unknown) {
+      Alert.alert('Error', e instanceof Error ? e.message : 'Could not delete account. Please try again.');
+    } finally {
+      setDeletingAccount(false);
+    }
   }
 
   if (profileLoading || expensesLoading) {
@@ -597,10 +628,27 @@ export default function SettingsScreen() {
             alignItems: 'center',
             borderWidth: 1,
             borderColor: '#f87171',
+            marginBottom: 12,
           }}
           onPress={handleSignOut}
         >
           <Text style={{ color: '#f87171', fontWeight: '600', fontSize: 16 }}>Sign out</Text>
+        </TouchableOpacity>
+
+        {/* Delete Account */}
+        <TouchableOpacity
+          style={{
+            borderRadius: 12,
+            paddingVertical: 16,
+            alignItems: 'center',
+            opacity: deletingAccount ? 0.6 : 1,
+          }}
+          onPress={handleDeleteAccount}
+          disabled={deletingAccount}
+        >
+          {deletingAccount
+            ? <ActivityIndicator color="#71717a" size="small" />
+            : <Text style={{ color: '#71717a', fontSize: 14 }}>Delete Account</Text>}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
